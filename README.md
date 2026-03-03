@@ -27,6 +27,18 @@ Wang's 2019 (1) proposed a neural network that offers a acceleration in paramete
 This project experimentally explores the integration of a physically simulated BB84 protocol with the machine learning framework proposed by Wang (2019), using a small-scale dataset, with potential extensions to incorporate different statistical fluctuation bounds.
 
 ## Project Stages
+#### brief
+- Implement BB84 at circuit level using Qiskit
+- Verify QBER trends under:
+  - Depolarizing noise
+  - Basis bias
+  - Channel loss (simulated)
+- Compare Qiskit QBER to analytical QBER
+- Show they match within statistical error (rephrase)
+- Switch to analytical model for dataset generation
+- Apply ML
+- Validate ML optimal parameters using Qiskit again
+
 ### Stage 1 - Parameterized BB84 Simulator
 - Implement theoretical key rate function (asymptotic ideal BB84 formula)
 - Implement analytical noisy channel model
@@ -74,7 +86,10 @@ This project experimentally explores the integration of a physically simulated B
 
 ### Step 4 (optional) - Bayesian? Optimization
 
-### Step 5 (Future work) - Finite-key Analysis
+### Step 5 - Feed optimal parameters back to qiskit
+- using qiskit for validation 
+
+### Step 6 (Future work) - Finite-key Analysis
 Extend key rate calculation to include:
 - Statistical fluctuation bounds
 - Security parameter ε
