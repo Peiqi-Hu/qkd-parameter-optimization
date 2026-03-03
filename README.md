@@ -28,7 +28,16 @@ This project experimentally explores the integration of a physically simulated B
 
 ## Project Stages
 ### Stage 1 - Parameterized BB84 Simulator
+- Implement theoretical key rate function (asymptotic ideal BB84 formula)
+- Implement analytical noisy channel model
+  - Plot:
+    - Key rate vs QBER
+    - Key rate vs transmittance
+  - Validate monotonicity:
+    - Increasing noise → decreasing key rate
+    - Increasing loss → decreasing key rate
 - Implement BB84 using Qiskit
+  - Confirm QBER simulation matches theory.
 - Parameterized basis bias probability
 - Noise model injection
 - Compute:
