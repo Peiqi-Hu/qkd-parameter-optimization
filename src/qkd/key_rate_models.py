@@ -101,6 +101,10 @@ from __future__ import annotations
 import numpy as np
 
 
+# -------------------------------------------------------------------
+# Basic utilities
+# -------------------------------------------------------------------
+
 def binary_entropy(q: np.ndarray | float) -> np.ndarray:
     """
     Binary entropy function h2(q) in bits:
@@ -238,6 +242,90 @@ def key_rate_noisy_per_pulse(
     return q_sift * q_mu * k_eff
 
 
+# -------------------------------------------------------------------
+# Fiber distance ↔ transmittance helpers
+# -------------------------------------------------------------------
+
+# Typical telecom-fiber and detector parameters for Stage 1 studies.
+DEFAULT_FIBER_LOSS_DB_PER_KM: float = 0.2
+DEFAULT_DETECTOR_EFFICIENCY: float = 0.1
+DEFAULT_MISC_EFFICIENCY: float = 1.0
+
+
+def transmittance_from_distance_km(
+    distance_km: np.ndarray | float,
+    alpha_db_per_km: float = DEFAULT_FIBER_LOSS_DB_PER_KM,
+    eta_detector: float = DEFAULT_DETECTOR_EFFICIENCY,
+    eta_misc: float = DEFAULT_MISC_EFFICIENCY,
+) -> np.ndarray:
+    """
+    Convert fiber distance (km) to total transmittance η.
+
+    We use the standard exponential-loss model for a channel with
+    attenuation α [dB/km]:
+
+        η_channel(L) = 10^(-α L / 10),
+
+    and then include detector and other constant optical efficiencies:
+
+        η_total(L) = η_misc * η_detector * η_channel(L).
+
+    Default parameters are loosely tuned to standard telecom-fiber
+    experiments (α ≈ 0.2 dB/km, η_detector ≈ 0.1).
+    """
+    d_km = np.asarray(distance_km, dtype=float)
+    eta_channel = 10.0 ** (-alpha_db_per_km * d_km / 10.0)
+    return eta_misc * eta_detector * eta_channel
+
+
+def key_rate_ideal_vs_distance(
+    distance_km: np.ndarray | float,
+    qber: float,
+    q_sift: float = 0.5,
+    alpha_db_per_km: float = DEFAULT_FIBER_LOSS_DB_PER_KM,
+    eta_detector: float = DEFAULT_DETECTOR_EFFICIENCY,
+    eta_misc: float = DEFAULT_MISC_EFFICIENCY,
+) -> np.ndarray:
+    """
+    Ideal per-pulse key rate as a function of fiber distance.
+    """
+    eta = transmittance_from_distance_km(
+        distance_km,
+        alpha_db_per_km=alpha_db_per_km,
+        eta_detector=eta_detector,
+        eta_misc=eta_misc,
+    )
+    return key_rate_ideal_per_pulse(qber=qber, eta=eta, q_sift=q_sift)
+
+
+def key_rate_noisy_vs_distance(
+    distance_km: np.ndarray | float,
+    y0: float,
+    e_d: float,
+    q_sift: float = 0.5,
+    f_ec: float = 1.1,
+    alpha_db_per_km: float = DEFAULT_FIBER_LOSS_DB_PER_KM,
+    eta_detector: float = DEFAULT_DETECTOR_EFFICIENCY,
+    eta_misc: float = DEFAULT_MISC_EFFICIENCY,
+) -> np.ndarray:
+    """
+    Noisy per-pulse key rate as a function of fiber distance.
+    """
+    eta = transmittance_from_distance_km(
+        distance_km,
+        alpha_db_per_km=alpha_db_per_km,
+        eta_detector=eta_detector,
+        eta_misc=eta_misc,
+    )
+    return key_rate_noisy_per_pulse(
+        eta=eta,
+        y0=y0,
+        e_d=e_d,
+        q_sift=q_sift,
+        f_ec=f_ec,
+    )
+
+
 # Convenience aliases for external use
 __all__ = [
     "binary_entropy",
@@ -246,5 +334,11 @@ __all__ = [
     "overall_gain",
     "overall_qber",
     "key_rate_noisy_per_pulse",
+    "DEFAULT_FIBER_LOSS_DB_PER_KM",
+    "DEFAULT_DETECTOR_EFFICIENCY",
+    "DEFAULT_MISC_EFFICIENCY",
+    "transmittance_from_distance_km",
+    "key_rate_ideal_vs_distance",
+    "key_rate_noisy_vs_distance",
 ]
 
